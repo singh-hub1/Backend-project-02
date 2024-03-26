@@ -18,10 +18,12 @@ app.use(express.json());
 
 
 // Allow requests from localhost:3000
-app.use(cors({
-  origin: 'frontend-project-02.vercel.app',
-  credentials: true
-}));
+// app.use(cors({
+//   origin: 'frontend-project-02.vercel.app',
+//   credentials: true
+// }));
+
+app.use(cors());
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Node app listening on port ${port}!`));

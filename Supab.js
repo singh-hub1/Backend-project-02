@@ -25,6 +25,28 @@ app.use(express.json());
 
 app.use(cors());
 
+
+// Enable CORS middleware
+app.use(function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', 'https://frontend-project-02.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  if (req.method === 'OPTIONS') {
+      res.sendStatus(200); // Preflight request response
+  } else {
+      next();
+  }
+});
+
+
+
+
+
+
+
+
+
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Node app listening on port ${port}!`));
 

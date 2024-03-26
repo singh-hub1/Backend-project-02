@@ -23,22 +23,31 @@ app.use(express.json());
 //   credentials: true
 // }));
 
-app.use(cors());
+// app.use(cors());
+
+
+// // Enable CORS middleware
+// app.use(function(req, res, next) {
+//   res.setHeader('Access-Control-Allow-Origin', 'https://frontend-project-02.vercel.app');
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+//   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+//   res.setHeader('Access-Control-Allow-Credentials', true);
+//   if (req.method === 'OPTIONS') {
+//       res.sendStatus(200); // Preflight request response
+//   } else {
+//       next();
+//   }
+// });
+
 
 
 // Enable CORS middleware
-app.use(function(req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://frontend-project-02.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  if (req.method === 'OPTIONS') {
-      res.sendStatus(200); // Preflight request response
-  } else {
-      next();
-  }
-});
-
+app.use(cors({
+  origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
+  methods: ['GET', 'POST', 'OPTIONS'], // Set allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
+  credentials: true // Allow credentials (cookies, authorization headers)
+}));
 
 
 

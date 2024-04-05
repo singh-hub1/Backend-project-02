@@ -43,7 +43,8 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
+  origin: 'https://frontend-project-02.vercel.app',  //this is for deployment
+  // origin:'http://localhost:3000', //this is fro locally
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
   credentials: true // Allow credentials (cookies, authorization headers)
@@ -265,9 +266,9 @@ app.get('/userProfiles', (req, res) => {
 // Endpoint for newdata
 
 app.post('/newuserdata', (req, res) => {
-  const { username, password, confirmpassword, name, dateofjoining, designation, department} = req.body;
-    const sql = 'insert into userdata (username, password,confirmpassword, name, dateofjoining, designation, department) VALUES ($1, $2, $3, $4, $5, $6,$7)';
-  const values = [username, password,confirmpassword, name, dateofjoining, designation, department];
+  const { emp_code,username, password, confirmpassword, name, dateofjoining, designation, department} = req.body;
+    const sql = 'insert into userdata (emp_code,username, password,confirmpassword, name, dateofjoining, designation, department) VALUES ($1, $2, $3, $4, $5, $6,$7,$8)';
+  const values = [emp_code,username, password,confirmpassword, name, dateofjoining, designation, department];
 
   connection.query(sql, values, (err, result) => {
     if (err) {
@@ -275,7 +276,7 @@ app.post('/newuserdata', (req, res) => {
       res.status(500).json({ error: 'Error saving employee details' });
       return;
     }
-    console.log('Employee details saved successfully');
+    // console.log('Employee details saved successfully');
     res.status(200).json({ message: 'Employee details saved successfully' });
   });
 });
@@ -301,11 +302,11 @@ app.post('/newuserdata', (req, res) => {
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------
 
-app.put('/userProfiles/:id', (req, res) => {
-  const { id } = req.params;
+app.put('/userProfiles/:emp_code', (req, res) => {
+  const { emp_code } = req.params;
   const { name, dateofjoining, designation, department } = req.body;
-  const sql = 'update userdata set name=$1, dateofjoining=$2, designation=$3, department=$4 where id=$5';
-  connection.query(sql, [name, dateofjoining, designation, department, id], (err, result) => {
+  const sql = 'update userdata set name=$1, dateofjoining=$2, designation=$3, department=$4 where emp_code=$5';
+  connection.query(sql, [name, dateofjoining, designation, department, emp_code], (err, result) => {
     if (err) {
       console.error('Error updating user profile:', err);
       res.status(500).json({ error: 'Error updating user profile' });
@@ -317,10 +318,10 @@ app.put('/userProfiles/:id', (req, res) => {
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------
-app.delete('/userProfiles/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'delete from userdata where id=$1';
-  connection.query(sql, [id], (err, result) => {
+app.delete('/userProfiles/:emp_code', (req, res) => {
+  const { emp_code } = req.params;
+  const sql = 'delete from userdata where emp_code=$1';
+  connection.query(sql, [emp_code], (err, result) => {
     if (err) {
       console.error('Error deleting user profile:', err);
       res.status(500).json({ error: 'Error deleting user profile' });
@@ -356,9 +357,9 @@ app.get('/admin/profile', (req, res) => {
 //************************************************************************************************************************************************************* */
 // Create a leave application
 app.post('/leave-applications', (req, res) => {
-  const { name, leaveType, empCode, startDate, endDate, daysOfLeave, reason } = req.body;
-  const insertQuery = `insert into leave_application (name, leavetype, empcode, startdate, enddate, daysofleave, reason) values ($1, $2, $3, $4, $5, $6, $7)`;
-  connection.query(insertQuery, [name, leaveType, empCode, startDate, endDate, daysOfLeave, reason], (err, result) => {
+  const { name, leaveType, emp_code, startDate, endDate, daysOfLeave, reason } = req.body;
+  const insertQuery = `insert into leave_application (name, leavetype, emp_code, startdate, enddate, daysofleave, reason) values ($1, $2, $3, $4, $5, $6, $7)`;
+  connection.query(insertQuery, [name, leaveType, emp_code, startDate, endDate, daysOfLeave, reason], (err, result) => {
     if (err) {
       console.error('Error creating leave application:', err);
       res.status(500).send('Error creating leave application');
@@ -373,7 +374,7 @@ app.post('/leave-applications', (req, res) => {
 
 // // API endpoints
 app.get('/leaveapplications', (req, res) => {
-  const sql = 'select name,leavetype,empcode,startdate,enddate,daysofleave,status from leave_application';
+  const sql = 'select name,leavetype,emp_code,startdate,enddate,daysofleave,status from leave_application';
   connection.query(sql, (err, result) => {
     if (err) {
       console.error('Error fetching user profiles:', err);
@@ -387,14 +388,14 @@ app.get('/leaveapplications', (req, res) => {
 
 
 // PUT request to update leave application status
-app.put('/leaveapplications/:id', (req, res) => {
-  const { id } = req.params;
+app.put('/leaveapplications/:emp_code', (req, res) => {
+  const { emp_code } = req.params;
   const { status } = req.body;
-// console.log(id);
+// console.log(emp_code);
 // console.log(status);
-  const sql = `update leave_application set status = $1 where empcode = $2`;
+  const sql = `update leave_application set status = $1 where emp_code = $2`;
 
-  connection.query(sql, [status, id], (err, result) => {
+  connection.query(sql, [status, emp_code], (err, result) => {
     if (err) {
       console.error('Error updating status:', err);
       res.status(500).send('Error updating status');
@@ -407,4 +408,74 @@ app.put('/leaveapplications/:id', (req, res) => {
 
 
 
+
+// Define a route to fetch leave data
+app.get('/api/leave-data', (req, res) => {
+  
+  const status = "Pending";
+  const sql ='select name,emp_code,status,applied_leave_dates from leave_application where status=$1';
+  connection.query(sql, [status], (err, result) => {
+    if (err) {
+      console.error('Error fetching user profiles:', err);
+      res.status(500).json({ error: 'Error fetching user profiles' });
+      return;
+    }
+    // console.log(result.rows);
+    res.json(result.rows);
+  });
+});
+
+
+// Define a route to fetch approved data
+app.get('/api/approved-data', (req, res) => {
+  
+  const status = "Approved";
+  const sql ='select name,emp_code,status,applied_leave_dates from leave_application where status=$1';
+  connection.query(sql, [status], (err, result) => {
+    if (err) {
+      console.error('Error fetching user profiles:', err);
+      res.status(500).json({ error: 'Error fetching user profiles' });
+      return;
+    }
+    // console.log(result.rows);
+    res.json(result.rows);
+  });
+});
+
+
+
+
+
+// Define a route to fetch Rejected data
+app.get('/api/Rejected-data', (req, res) => {
+  
+  const status = "Rejected";
+  const sql ='select name,emp_code,status,applied_leave_dates from leave_application where status=$1';
+  connection.query(sql, [status], (err, result) => {
+    if (err) {
+      console.error('Error fetching user profiles:', err);
+      res.status(500).json({ error: 'Error fetching user profiles' });
+      return;
+    }
+    // console.log(result.rows);
+    res.json(result.rows);
+  });
+});
+
+
+// Define a route to fetch Rejected data
+app.get('/api/tracking-leaves', (req, res) => {
+  
+  
+  const sql ='select name,daysofleave,emp_code,total_leaves from leave_application';
+  connection.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error fetching user profiles:', err);
+      res.status(500).json({ error: 'Error fetching user profiles' });
+      return;
+    }
+    // console.log(result.rows);
+    res.json(result.rows);
+  });
+});
 

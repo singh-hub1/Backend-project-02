@@ -43,8 +43,8 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'https://frontend-project-02.vercel.app',  //this is for deployment
-  // origin:'http://localhost:3000', //this is fro locally
+  origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
+  // origin:'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
   credentials: true // Allow credentials (cookies, authorization headers)
@@ -357,9 +357,9 @@ app.get('/admin/profile', (req, res) => {
 //************************************************************************************************************************************************************* */
 // Create a leave application
 app.post('/leave-applications', (req, res) => {
-  const { name, leaveType, emp_code, startDate, endDate, daysOfLeave, reason } = req.body;
-  const insertQuery = `insert into leave_application (name, leavetype, emp_code, startdate, enddate, daysofleave, reason) values ($1, $2, $3, $4, $5, $6, $7)`;
-  connection.query(insertQuery, [name, leaveType, emp_code, startDate, endDate, daysOfLeave, reason], (err, result) => {
+  const { name, leaveDate,empCode,leaveType, startDate, endDate, daysOfLeave, reason } = req.body;
+  const insertQuery = `insert into leave_application (name, leavetype, emp_code, applied_leave_dates,startdate, enddate, daysofleave, reason) values ($1, $2, $3, $4, $5, $6, $7,$8)`;
+  connection.query(insertQuery, [name,leaveType, empCode,leaveDate, startDate, endDate, daysOfLeave, reason], (err, result) => {
     if (err) {
       console.error('Error creating leave application:', err);
       res.status(500).send('Error creating leave application');
@@ -479,3 +479,186 @@ app.get('/api/tracking-leaves', (req, res) => {
   });
 });
 
+
+
+
+// API endpoint to fetch leave data for a particular user
+app.get('/leavedetails/:employeeCode', (req, res) => {
+  const empCode = req.params.employeeCode;
+console.log(empCode);
+  const query = `select * from leave_application where emp_code = $1`;
+
+  connection.query(query, [empCode], (err, results) => {
+    if (err) {
+      console.error('Error fetching leave data: ', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    res.json(results.rows);
+  });
+});
+
+
+
+
+
+
+// USERDASHBOARD TIMESHEET API********************************************************
+
+
+
+// Route to handle time-in requests
+app.post('/timein', (req, res) => {
+  const { employeeCode, employeeUsername } = req.body;
+
+ 
+  console.log('Employee Code:', employeeCode);
+  console.log('Employee Username:', employeeUsername);
+ 
+
+   // Get current UTC time
+ const utcTime = new Date();
+  
+ // Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+ const istOffset = 5.5 * 60 * 60 * 1000;
+ 
+ // Calculate the current time in IST
+ const istTime = new Date(utcTime.getTime() + istOffset);
+ 
+ // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+ const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+ const sql = 'insert into user_time_sheet (username,emp_code,time_in) VALUES ($1, $2, $3)';
+ const values = [employeeUsername,employeeCode,istTimeString];
+
+ connection.query(sql, values, (err, result) => {
+  if (err) {
+    console.error('Error inserting data into MySQL: ' + err.message);
+    res.status(500).json({ error: 'Error recording time in.' });
+    return;
+  }
+  console.log('Time in recorded successfully.');
+  res.status(200).json({ message: 'Time in recorded successfully.' });
+});
+});
+
+
+
+
+
+
+
+
+// Route to handle time-out requests
+app.post('/timeout', (req, res) => {
+  const { employeeCode, employeeUsername } = req.body;
+
+ 
+  console.log('Employee Code:', employeeCode);
+  console.log('Employee Username:', employeeUsername);
+ 
+
+   // Get current UTC time
+ const utcTime = new Date();
+  
+ // Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+ const istOffset = 5.5 * 60 * 60 * 1000;
+ 
+ // Calculate the current time in IST
+ const istTime = new Date(utcTime.getTime() + istOffset);
+ 
+ // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+ const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+ const sql = 'update user_time_sheet  set time_out = $1  where username = $2 and emp_code = $3';
+ const values = [istTimeString,employeeUsername,employeeCode,];
+
+ connection.query(sql, values, (err, result) => {
+  if (err) {
+    console.error('Error updating data into MySQL: ' + err.message);
+    res.status(500).json({ error: 'Error recording time out.' });
+    return;
+  }
+  console.log('Time out recorded successfully.');
+  res.status(200).json({ message: 'Time out recorded successfully.' });
+});
+});
+
+
+
+
+
+
+// Route to handle tea break requests
+app.post('/teabreak', (req, res) => {
+  const { employeeCode, employeeUsername } = req.body;
+
+ 
+  console.log('Employee Code:', employeeCode);
+  console.log('Employee Username:', employeeUsername);
+ 
+
+   // Get current UTC time
+ const utcTime = new Date();
+  
+ // Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+ const istOffset = 5.5 * 60 * 60 * 1000;
+ 
+ // Calculate the current time in IST
+ const istTime = new Date(utcTime.getTime() + istOffset);
+ 
+ // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+ const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+ const sql = 'update user_time_sheet  set tea_break = $1  where username = $2 and emp_code = $3';
+ const values = [istTimeString,employeeUsername,employeeCode,];
+
+ connection.query(sql, values, (err, result) => {
+  if (err) {
+    console.error('Error updating data into MySQL: ' + err.message);
+    res.status(500).json({ error: 'Error recording tea break.' });
+    return;
+  }
+  console.log('Tea break recorded successfully.');
+  res.status(200).json({ message: 'Tea break recorded successfully.' });
+});
+});
+
+
+
+
+// Route to handle smoking break requests
+app.post('/smokingbreak', (req, res) => {
+  const { employeeCode, employeeUsername } = req.body;
+
+ 
+  console.log('Employee Code:', employeeCode);
+  console.log('Employee Username:', employeeUsername);
+ 
+
+   // Get current UTC time
+ const utcTime = new Date();
+  
+ // Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+ const istOffset = 5.5 * 60 * 60 * 1000;
+ 
+ // Calculate the current time in IST
+ const istTime = new Date(utcTime.getTime() + istOffset);
+ 
+ // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+ const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+ const sql = 'update user_time_sheet set smoking_break = $1  where username = $2 and emp_code = $3';
+ const values = [istTimeString,employeeUsername,employeeCode,];
+
+ connection.query(sql, values, (err, result) => {
+  if (err) {
+    console.error('Error updating data into MySQL: ' + err.message);
+    res.status(500).json({ error: 'Error recording smoking break.' });
+    return;
+  }
+  console.log('smoking break recorded successfully.');
+  res.status(200).json({ message: 'smoking break recorded successfully.' });
+});
+});

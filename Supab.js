@@ -23,7 +23,7 @@ app.use(express.json());
 //   credentials: true
 // }));
 
-// app.use(cors());
+app.use(cors());
 
 
 // // Enable CORS middleware
@@ -43,7 +43,7 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'https://frontend-project-02.vercel.app/LMS/', // Set the origin to allow requests from
+  origin: 'https://frontend-project-02.vercel.app/LMS', // Set the origin to allow requests from
   // origin:'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers

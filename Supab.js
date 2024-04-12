@@ -43,8 +43,8 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  // origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
-  origin:'http://localhost:3000',
+  origin: 'https://frontend-project-02.vercel.app/LMS', // Set the origin to allow requests from
+  // origin:'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
   credentials: true // Allow credentials (cookies, authorization headers)

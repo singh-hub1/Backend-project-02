@@ -43,8 +43,8 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
-  // origin:'http://localhost:3000',
+  // origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
+  origin:'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
   credentials: true // Allow credentials (cookies, authorization headers)
@@ -513,8 +513,8 @@ app.post('/timein', (req, res) => {
   const { employeeCode, employeeUsername } = req.body;
 
  
-  console.log('Employee Code:', employeeCode);
-  console.log('Employee Username:', employeeUsername);
+  // console.log('Employee Code:', employeeCode);
+  // console.log('Employee Username:', employeeUsername);
  
 
    // Get current UTC time
@@ -529,8 +529,12 @@ app.post('/timein', (req, res) => {
  // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
  const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
 
- const sql = 'insert into user_time_sheet (username,emp_code,time_in) VALUES ($1, $2, $3)';
- const values = [employeeUsername,employeeCode,istTimeString];
+   // Get current date in 'YYYY-MM-DD' format
+   const currentDate = new Date().toISOString().slice(0, 10);
+
+
+ const sql = 'insert into user_time_sheet (username,emp_code,time_in,user_current_date) VALUES ($1, $2, $3,$4)';
+ const values = [employeeUsername,employeeCode,istTimeString,currentDate];
 
  connection.query(sql, values, (err, result) => {
   if (err) {
@@ -555,8 +559,8 @@ app.post('/timeout', (req, res) => {
   const { employeeCode, employeeUsername } = req.body;
 
  
-  console.log('Employee Code:', employeeCode);
-  console.log('Employee Username:', employeeUsername);
+  // console.log('Employee Code:', employeeCode);
+  // console.log('Employee Username:', employeeUsername);
  
 
    // Get current UTC time
@@ -595,8 +599,8 @@ app.post('/teabreak', (req, res) => {
   const { employeeCode, employeeUsername } = req.body;
 
  
-  console.log('Employee Code:', employeeCode);
-  console.log('Employee Username:', employeeUsername);
+  // console.log('Employee Code:', employeeCode);
+  // console.log('Employee Username:', employeeUsername);
  
 
    // Get current UTC time
@@ -633,8 +637,8 @@ app.post('/smokingbreak', (req, res) => {
   const { employeeCode, employeeUsername } = req.body;
 
  
-  console.log('Employee Code:', employeeCode);
-  console.log('Employee Username:', employeeUsername);
+  // console.log('Employee Code:', employeeCode);
+  // console.log('Employee Username:', employeeUsername);
  
 
    // Get current UTC time
@@ -661,4 +665,30 @@ app.post('/smokingbreak', (req, res) => {
   console.log('smoking break recorded successfully.');
   res.status(200).json({ message: 'smoking break recorded successfully.' });
 });
+});
+
+
+
+// Endpoint to retrieve timesheet data
+app.get('/timesheet', (req, res) => {
+  const { employeeCode, employeeUsername } = req.query;
+
+  // Get today's date in the format 'YYYY-MM-DD'
+  const todayDate = new Date().toISOString().slice(0, 10);
+
+  const query = `
+    SELECT time_in, time_out, tea_break, smoking_break 
+    FROM user_time_sheet 
+    WHERE emp_code = $1 
+    AND username = $2 
+    AND user_current_date = $3`;
+
+  connection.query(query, [employeeCode, employeeUsername, todayDate], (err, results) => {
+    if (err) {
+      console.error('Error querying database:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    res.json(results.rows);
+  });
 });

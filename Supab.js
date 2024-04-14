@@ -43,7 +43,7 @@ app.use(express.json());
 
 // Enable CORS middleware
 app.use(cors({
-  origin: 'https://frontend-project-02.vercel.app', // Set the origin to allow requests from
+  origin: 'https://frontend-project-02.vercel.app/LMS', // Set the origin to allow requests from
   // origin:'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS','DELETE','PUT'], // Set allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Set allowed headers
@@ -503,7 +503,7 @@ app.get('/api/tracking-leaves', (req, res) => {
 // API endpoint to fetch leave data for a particular user
 app.get('/leavedetails/:employeeCode', (req, res) => {
   const empCode = req.params.employeeCode;
-// console.log(empCode);
+console.log(empCode);
   const query = `select * from leave_application where emp_code = $1`;
 
   connection.query(query, [empCode], (err, results) => {

@@ -357,9 +357,27 @@ app.get('/admin/profile', (req, res) => {
 //************************************************************************************************************************************************************* */
 // Create a leave application
 app.post('/leave-applications', (req, res) => {
-  const { name, leaveDate,empCode,leaveType, startDate, endDate, daysOfLeave, reason } = req.body;
+  const { name,empCode,leaveType, startDate, endDate, daysOfLeave, reason } = req.body;
+
+
+// Get current UTC time
+const utcTime = new Date();
+  
+// Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+const istOffset = 5.5 * 60 * 60 * 1000;
+
+// Calculate the current time in IST
+const istTime = new Date(utcTime.getTime() + istOffset);
+
+// Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+  // Get current date in 'YYYY-MM-DD' format
+  const currentDate = new Date().toISOString().slice(0, 10);
+
+
   const insertQuery = `insert into leave_application (name, leavetype, emp_code, applied_leave_dates,startdate, enddate, daysofleave, reason) values ($1, $2, $3, $4, $5, $6, $7,$8)`;
-  connection.query(insertQuery, [name,leaveType, empCode,leaveDate, startDate, endDate, daysOfLeave, reason], (err, result) => {
+  connection.query(insertQuery, [name,leaveType, empCode,currentDate, startDate, endDate, daysOfLeave, reason], (err, result) => {
     if (err) {
       console.error('Error creating leave application:', err);
       res.status(500).send('Error creating leave application');
@@ -374,7 +392,7 @@ app.post('/leave-applications', (req, res) => {
 
 // // API endpoints
 app.get('/leaveapplications', (req, res) => {
-  const sql = 'select name,leavetype,emp_code,startdate,enddate,daysofleave,status from leave_application';
+  const sql = 'select applied_leave_dates,name,leavetype,emp_code,startdate,enddate,daysofleave,status from leave_application';
   connection.query(sql, (err, result) => {
     if (err) {
       console.error('Error fetching user profiles:', err);
@@ -485,7 +503,7 @@ app.get('/api/tracking-leaves', (req, res) => {
 // API endpoint to fetch leave data for a particular user
 app.get('/leavedetails/:employeeCode', (req, res) => {
   const empCode = req.params.employeeCode;
-console.log(empCode);
+// console.log(empCode);
   const query = `select * from leave_application where emp_code = $1`;
 
   connection.query(query, [empCode], (err, results) => {
@@ -509,6 +527,8 @@ console.log(empCode);
 
 
 // Route to handle time-in requests
+
+
 app.post('/timein', (req, res) => {
   const { employeeCode, employeeUsername } = req.body;
 
@@ -546,6 +566,72 @@ app.post('/timein', (req, res) => {
   res.status(200).json({ message: 'Time in recorded successfully.' });
 });
 });
+
+
+
+
+// app.post('/timein', (req, res) => {
+//   const { employeeCode, employeeUsername } = req.body;
+
+//   // Get current UTC time
+//   const utcTime = new Date();
+  
+//   // Calculate the offset for Indian Standard Time (IST) in milliseconds (UTC+5:30)
+//   const istOffset = 5.5 * 60 * 60 * 1000;
+ 
+//   // Calculate the current time in IST
+//   const istTime = new Date(utcTime.getTime() + istOffset);
+ 
+//   // Format IST time as a string in 'YYYY-MM-DD HH:MM:SS' format
+//   const istTimeString = istTime.toISOString().slice(0, 19).replace('T', ' ');
+
+//   // Get current date in 'YYYY-MM-DD' format
+//   const currentDate = new Date().toISOString().slice(0, 10);
+
+//   // Check if there is already a time-in record for the current date
+//   const selectSql = 'select * from user_time_sheet where emp_code = $1 AND user_current_date = $2';
+//   const selectValues = [employeeCode, currentDate];
+
+//   connection.query(selectSql, selectValues, (selectErr, selectResult) => {
+//     if (selectErr) {
+//       console.error('Error selecting data from MySQL: ' + selectErr.message);
+//       res.status(500).json({ error: 'Error updating time in.' });
+//       return;
+//     }
+    
+//     if (selectResult.length === 0) {
+//       // If no record exists for the current date, insert a new record
+//       const insertSql = 'INSERT INTO user_time_sheet (username, emp_code, time_in, user_current_date) VALUES ($1, $2, $3, $4)';
+//       const insertValues = [employeeUsername, employeeCode, istTimeString, currentDate];
+
+//       connection.query(insertSql, insertValues, (insertErr, insertResult) => {
+//         if (insertErr) {
+//           console.error('Error inserting data into MySQL: ' + insertErr.message);
+//           res.status(500).json({ error: 'Error recording time in.' });
+//           return;
+//         }
+//         console.log('Time in recorded successfully.');
+//         res.status(200).json({ message: 'Time in recorded successfully.' });
+//       });
+//     } else {
+//       // If a record already exists for the current date, update the time_in column
+//       const updateSql = 'UPDATE user_time_sheet SET time_in = $1 WHERE username = $2 AND user_current_date = $3';
+//       const updateValues = [istTimeString, employeeUsername, currentDate];
+
+//       connection.query(updateSql, updateValues, (updateErr, updateResult) => {
+//         if (updateErr) {
+//           console.error('Error updating data in MySQL: ' + updateErr.message);
+//           res.status(500).json({ error: 'Error updating time in.' });
+//           return;
+//         }
+//         console.log('Time in updated successfully.');
+//         res.status(200).json({ message: 'Time in updated successfully.' });
+//       });
+//     }
+//   });
+// });
+
+
 
 
 
